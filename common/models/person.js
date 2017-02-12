@@ -8,7 +8,13 @@ module.exports = function(Person) {
     Person.observe('after save', function(ctx, next){
         console.log(ctx);
         var esModel = Person.app.models.esmodel;
-        esModel.creteUpdateIndex(ctx.instance, 'person');
+        esModel.creteUpdateIndex(ctx.instance, 'person')
+            .then(function(val){
+                console.log('done',val)
+            })
+            .catch(function(reason){
+                console.log(reason);
+            })
         next();
     });
 

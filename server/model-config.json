@@ -42,5 +42,9 @@
   "esmodel": {
     "dataSource": null,
     "public": true
+  },
+  "container": {
+    "dataSource": "myfile",
+    "public": false
   }
 }

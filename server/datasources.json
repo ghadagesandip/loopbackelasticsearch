@@ -11,5 +11,11 @@
     "name": "mysql",
     "connector": "mysql",
     "user": "root"
+  },
+  "myfile": {
+    "name": "myfile",
+    "connector": "loopback-component-storage",
+    "provider": "filesystem",
+    "root": "./server/storage"
   }
 }
