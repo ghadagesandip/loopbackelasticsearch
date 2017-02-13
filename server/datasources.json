@@ -7,7 +7,7 @@
     "host": "localhost",
     "port": 3306,
     "database": "loopbackelastic",
-    "password": "root",
+    "password": "webwerks",
     "name": "mysql",
     "connector": "mysql",
     "user": "root"
@@ -16,6 +16,6 @@
     "name": "myfile",
     "connector": "loopback-component-storage",
     "provider": "filesystem",
-    "root": "./server/storage"
+    "root": "/var/www/html/loopbackelasticsearch/client/storage"
   }
 }

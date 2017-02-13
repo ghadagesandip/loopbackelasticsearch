@@ -2,7 +2,30 @@
 
 module.exports = function(Person) {
 
+    var containerName = 'profile_image';
 
+    Person.profileData = function(ctx, cb){
+        ctx.req.params.container = containerName;
+
+        Person.app.models.container.upload(ctx.req,ctx.result,function (err,fileObj) {
+            if(err){
+                console.log('err', err);
+            }else{
+                console.log('fileObj', fileObj);
+            }
+        });
+    }
+
+
+    Person.remoteMethod(
+        'profileData',
+        {
+            accepts: [
+                {arg: 'ctx', type: 'object', http: { source:'context' }}
+            ],
+            returns: {arg: 'data', type: 'object', root:true}
+        }
+    );
 
 
     Person.observe('after save', function(ctx, next){
