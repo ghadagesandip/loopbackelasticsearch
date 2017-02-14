@@ -1,93 +1,44 @@
-angular.module('app', ['angularFileUpload'])
+var app = angular.module('app', []);
 
-    // The example of the full functionality
-    .controller('TestController',function ($scope, FileUploader) {
-            'use strict';
+app.directive('fileModel', ['$parse', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var model = $parse(attrs.fileModel);
+            var modelSetter = model.assign;
 
-            // create a uploader with options
-
-            var uploader = $scope.uploader = new FileUploader({
-                scope: $scope,                          // to automatically update the html. Default: $rootScope
-                url: '/api/containers/container1/upload',
-                formData: [
-                    { key: 'value' }
-                ]
+            element.bind('change', function(){
+                scope.$apply(function(){
+                    modelSetter(scope, element[0].files[0]);
+                });
             });
-
-            // ADDING FILTERS
-            uploader.filters.push({
-                name: 'filterName',
-                fn: function (item, options) { // second user filter
-                    console.info('filter2');
-                    return true;
-                }
-            });
-
-            // REGISTER HANDLERS
-            // --------------------
-            uploader.onAfterAddingFile = function(item) {
-                console.info('After adding a file', item);
-            };
-            // --------------------
-            uploader.onAfterAddingAll = function(items) {
-                console.info('After adding all files', items);
-            };
-            // --------------------
-            uploader.onWhenAddingFileFailed = function(item, filter, options) {
-                console.info('When adding a file failed', item);
-            };
-            // --------------------
-            uploader.onBeforeUploadItem = function(item) {
-                console.info('Before upload', item);
-            };
-            // --------------------
-            uploader.onProgressItem = function(item, progress) {
-                console.info('Progress: ' + progress, item);
-            };
-            // --------------------
-            uploader.onProgressAll = function(progress) {
-                console.info('Total progress: ' + progress);
-            };
-            // --------------------
-            uploader.onSuccessItem = function(item, response, status, headers) {
-                console.info('Success', response, status, headers);
-                $scope.$broadcast('uploadCompleted', item);
-            };
-            // --------------------
-            uploader.onErrorItem = function(item, response, status, headers) {
-                console.info('Error', response, status, headers);
-            };
-            // --------------------
-            uploader.onCancelItem = function(item, response, status, headers) {
-                console.info('Cancel', response, status);
-            };
-            // --------------------
-            uploader.onCompleteItem = function(item, response, status, headers) {
-                console.info('Complete', response, status, headers);
-            };
-            // --------------------
-            uploader.onCompleteAll = function() {
-                console.info('Complete all');
-            };
-            // --------------------
         }
-    ).controller('FilesController', function ($scope, $http) {
-
-    $scope.load = function () {
-        $http.get('/api/containers/container1/files').success(function (data) {
-            console.log(data);
-            $scope.files = data;
-        });
     };
+}]);
 
-    $scope.delete = function (index, id) {
-        $http.delete('/api/containers/container1/files/' + encodeURIComponent(id)).success(function (data, status, headers) {
-            $scope.files.splice(index, 1);
-        });
+
+app.service('fileUpload', ['$http', function ($https) {
+    this.uploadFileToUrl = function(file, formData, uploadUrl){
+        var fd = new FormData();
+        fd.append('file', file);
+        fd.append('fields', JSON.stringify(formData));
+        console.log("asd" , fd);
+        $https.post(uploadUrl, fd, {
+            transformRequest: angular.identity,
+            headers: {'Content-Type': undefined}
+        })
+    }
+}]);
+
+
+app.controller('myCtrl', ['$scope', 'fileUpload', function($scope,fileUpload){
+    $scope.user = {};
+    $scope.uploadFile = function(){
+        var file = $scope.myFile;
+        console.log('file is ' );
+        console.dir(file);
+
+        var uploadUrl = "http://0.0.0.0:3000/api/people/profileData";
+        fileUpload.uploadFileToUrl(file, $scope.user, uploadUrl);
     };
-
-    $scope.$on('uploadCompleted', function(event) {
-        console.log('uploadCompleted event received');
-        $scope.load();
-    });
-});
+}]);

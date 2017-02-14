@@ -11,7 +11,7 @@ module.exports = function(Person) {
             if(err){
                 console.log('err', err);
             }else{
-                console.log('fileObj', fileObj);
+                console.log('success fileObj', fileObj);
             }
         });
     }
