@@ -1,22 +1,23 @@
 'use strict';
 var elasticsearch = require('elasticsearch');
-var client = new elasticsearch.Client({
-    host: 'localhost:9200',
-    log: 'trace'
-});
-module.exports = client;
-var indexName = 'devspotcrunch';
+var config = require('../config.json');
 
-module.exports = function(Esmodel) {
+var client = new elasticsearch.Client(config.elasticSearch.es_config);
+module.exports = client;
+
+var indexName = config.elasticSearch.indexName;
+
+
+module.exports = function(Elasticodel) {
 
     //create or update index
-    Esmodel.creteUpdateIndex = function(data, docType){
+    Elasticodel.creteUpdateIndex = function(data, docType){
         return new Promise(function(resolve, reject){
             client.index({
                 index : indexName ,
-                id : data.id,
                 type :docType,
-                body : data
+                body : data,
+                id : data.id
             },function(err, resp, status){
                 if(!err){
                     resolve(resp)
@@ -27,9 +28,65 @@ module.exports = function(Esmodel) {
         })
     };
 
+    // reindex doc type it will delete all
+    Elasticodel.reIndexDocType = function(docType, data){
+
+        return new Promise(function(resolve, reject){
+
+            Elasticodel.deleteDocType(docType)
+                .then(function(value){
+                    console.log(value);
+                    console.log('started indexing')
+                    for(let dataItem of data){
+
+                        Elasticodel.creteUpdateIndex(dataItem,docType)
+                            .then(function(newData){
+                                console.log('indexed')
+                            })
+                            .catch(function(reasone){
+                                console.log('not indexed')
+                            })
+                    }
+                    console.log('end indexing');
+                    console.log('sending response');
+                    resolve(true);
+                    console.log('send response');
+
+                })
+                .catch(function(reason){
+                    reject(reason)
+                })
+
+
+
+        })
+    }
+
+
+
+    //get a document
+    Elasticodel.getDocumentByTypeId = function(docType, typeID){
+        return new Promise(function(resolve, reject){
+            client.get({
+                index : indexName,
+                type : docType,
+                id : typeID
+            },function(err, resp, status){
+                if(!err){
+                    resolve(resp);
+                }else{
+                    reject(err);
+                }
+            })
+        })
+    };
+
+
+
+
 
     //get document count
-    Esmodel.getDocCount = function(docType){
+    Elasticodel.getDocCount = function(docType){
         return new Promise(function(resolve, reject){
             client.count(
                 {
@@ -45,11 +102,11 @@ module.exports = function(Esmodel) {
                 }
             )
         })
-    }
+    };
 
 
     //Delete document
-    Esmodel.deleteDocument  = function(docType, docId){
+    Elasticodel.deleteDocTypeById  = function(docType, docId){
         console.log('docId' , docId);
         return new Promise(function(resolve, reject){
             client.delete(
@@ -69,7 +126,38 @@ module.exports = function(Esmodel) {
                 }
             )
         })
+    };
+
+
+    Elasticodel.deleteDocType = function(docType){
+
+        return new Promise(function(resolve, reject){
+            if(docType === undefined){
+                reject('please specify document type')
+            }else{
+                client.deleteByQuery(
+                    {
+                        index : indexName,
+                        type : docType,
+                        body : {
+                            "query": {
+                                "match_all": {}
+                            }
+                        }
+                    },
+                    function(err, res, status){
+                        if(!err){
+                            console.log('delete doc type');
+                            resolve(res)
+                        }else{
+                            console.log('could not delete doc type', err);
+                            reject(err);
+                        }
+                    }
+                )
+            }
+        })
+
     }
 
-    //delete index
 };
