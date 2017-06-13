@@ -19,12 +19,11 @@
     },
     "cors": false
   },
-  "elasticSearch" : {
-    "es_config" : {
-      "host_port" : "localhost:9200",
-      "apiVersion" : "5.0"
+  "elasticSearch": {
+    "es_config": {
+      "host_port": "localhost:9200",
+      "apiVersion": "5.0"
     },
-    "indexName" : "devspotcrunch"
-
+    "indexName": "devspotcrunch"
   }
 }

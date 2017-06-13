@@ -1,6 +1,6 @@
 var server = require('./server');
 var ds = server.datasources.mysql;
-var lbTables  = ['person'];
+var lbTables  = ['person','Asset'];
 
 ds.autoupdate(lbTables, function(err){
     if (err) throw err;
